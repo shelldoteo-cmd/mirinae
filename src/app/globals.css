@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;900&family=Outfit:wght@300;400;600;800&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #090807; /* 깊고 은밀한 밤빛 */
+  --foreground: #f4eae0; /* 옛 한지 느낌의 부드러운 아이보리 */
+  --primary: #d97706;    /* 따뜻하고 은은한 등불 주황 */
+  --primary-glow: rgba(217, 119, 6, 0.15);
+  
+  --card-bg: rgba(22, 19, 16, 0.65); /* 묵직한 옻칠 나무 카드 반투명 */
+  --card-border: rgba(217, 119, 6, 0.12);
+  --card-blur: 16px;
+  
+  --font-serif: 'Noto Serif KR', serif;
+  --font-sans: 'Outfit', sans-serif;
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-accent: #f59e0b;
+  --color-wood: #2c1d11;
+  --color-fog: #1a1613;
+  
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+  
+  --animate-flicker: flicker 4s infinite alternate;
+  --animate-mist: floatMist 20s infinite linear;
+}
+
+@keyframes flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    box-shadow: 0 0 20px rgba(217, 119, 6, 0.3), 0 0 40px rgba(217, 119, 6, 0.1);
+    opacity: 0.95;
+  }
+  20%, 24%, 55% {
+    box-shadow: 0 0 10px rgba(217, 119, 6, 0.1), 0 0 20px rgba(217, 119, 6, 0.05);
+    opacity: 0.7;
+  }
+  22% {
+    box-shadow: 0 0 30px rgba(217, 119, 6, 0.5), 0 0 60px rgba(217, 119, 6, 0.2);
+    opacity: 1;
+  }
+}
+
+@keyframes floatMist {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(217, 119, 6, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.03) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* 동양풍 장식용 보더 스타일 */
+.korean-border {
+  position: relative;
+}
+.korean-border::before {
+  content: "";
+  position: absolute;
+  top: 4px; left: 4px; right: 4px; bottom: 4px;
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* 프리미엄 글래스모피즘 카드 */
+.glass-panel {
+  background: var(--card-bg);
+  backdrop-filter: blur(var(--card-blur));
+  -webkit-backdrop-filter: blur(var(--card-blur));
+  border: 1px solid var(--card-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+}
+
+.glass-panel-hover:hover {
+  border-color: rgba(217, 119, 6, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(217, 119, 6, 0.08);
+  transition: all 0.3s ease;
+}
+
+/* 스크롤바 커스텀 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #090807;
+}
+::-webkit-scrollbar-thumb {
+  background: #2c1d11;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #d97706;
+}
+
+/* 붓글씨 타이틀 폰트 강제 적용 */
+.serif-title {
+  font-family: var(--font-serif);
+  font-weight: 900;
+}
