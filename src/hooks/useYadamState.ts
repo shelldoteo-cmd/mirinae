@@ -599,6 +599,7 @@ export function useYadamState() {
 
     setLoading(true);
     setErrorMsg("");
+    setActGenProgress("대본 교정 중입니다... (대본 분량에 따라 1~3분 소요될 수 있습니다)");
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -619,40 +620,44 @@ export function useYadamState() {
 
       const data = await res.json();
       setFinalScript(data.refinedScript);
-      setValidationResult(null); // 교정 후 검수 결과 초기화 → 재검수 유도
 
       triggerConfetti({
         particleCount: 80,
         spread: 60,
       });
 
-      // 교정 완료 후 자동 재검수 트리거
-      setTimeout(async () => {
-        try {
-          const valRes = await fetch("/api/generate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              step: "validateScript",
-              llmConfig: projects.llmConfig,
-              projectName: projects.projectName,
-              script: data.refinedScript,
-              plotPlan,
-            }),
-          });
-          if (valRes.ok) {
-            const valData = await valRes.json();
-            setValidationResult(valData.validationResult);
-          }
-        } catch (e) {
-          console.warn("자동 재검수 실패:", e);
-        } finally {
-          setLoading(false);
+      // ★ 교정 성공 → 즉시 로딩 해제 (사용자가 멈춘 것처럼 느끼지 않도록)
+      setLoading(false);
+      setActGenProgress("");
+
+      // 백그라운드에서 자동 재검수 (별도 로딩 표시)
+      setValidationResult(null);
+      setActGenProgress("교정 완료! 자동 재검수를 진행합니다...");
+      try {
+        const valRes = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            step: "validateScript",
+            llmConfig: projects.llmConfig,
+            projectName: projects.projectName,
+            script: data.refinedScript,
+            plotPlan,
+          }),
+        });
+        if (valRes.ok) {
+          const valData = await valRes.json();
+          setValidationResult(valData.validationResult);
         }
-      }, 100);
+      } catch (e) {
+        console.warn("자동 재검수 실패:", e);
+      } finally {
+        setActGenProgress("");
+      }
     } catch (err) {
       setErrorMsg((err as Error).message);
       setLoading(false);
+      setActGenProgress("");
     }
   };
 

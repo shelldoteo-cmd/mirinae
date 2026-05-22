@@ -15,6 +15,7 @@ interface Step5ScriptValidationProps {
   topic: string;
   selectedType: any;
   handleGoToTtsStep: () => void;
+  actGenProgress: string;
 }
 
 export default function Step5ScriptValidation({
@@ -28,6 +29,7 @@ export default function Step5ScriptValidation({
   topic,
   selectedType,
   handleGoToTtsStep,
+  actGenProgress,
 }: Step5ScriptValidationProps) {
   const [scriptViewTab, setScriptViewTab] = useState<"viewer" | "raw">("viewer");
 
@@ -76,6 +78,14 @@ export default function Step5ScriptValidation({
           )}
         </div>
       </div>
+
+      {/* 교정 진행 상태 표시 */}
+      {actGenProgress && (
+        <div className="flex items-center gap-3 p-3 bg-amber-950/20 border border-amber-600/20 rounded-lg animate-pulse">
+          <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm text-amber-400 font-medium">{actGenProgress}</span>
+        </div>
+      )}
 
       {validationResult ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1">

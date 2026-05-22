@@ -329,6 +329,7 @@ export default function YadamDashboard() {
               topic={topic}
               selectedType={selectedType}
               handleGoToTtsStep={handleGoToTtsStep}
+              actGenProgress={actGenProgress}
             />
           )}
 
