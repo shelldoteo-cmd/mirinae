@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# large files / build artifacts
+/node_modules_old/
+/output/
+/public/output/
+/Memory/
+yadam.zip
+_polish_request.json
+project_operating_prompt_bootstrap_reanchor_memory.md
+*.mp3
+*.wav
+*.zip

@@ -4,10 +4,10 @@ import { GoogleTtsAdapter } from "@/lib/tts/GoogleTtsAdapter";
 import * as fs from "fs";
 import * as path from "path";
 
-// output 폴더와 public/output 폴더에 산출물을 동시 저장하는 헬퍼 함수
-function saveOutputFile(filename: string, content: string, isBinary: boolean = false) {
-  const rootOutputDir = path.join(process.cwd(), "output");
-  const publicOutputDir = path.join(process.cwd(), "public", "output");
+// output/{projectName}/ 폴더와 public/output/{projectName}/ 폴더에 산출물을 동시 저장하는 헬퍼 함수
+function saveOutputFile(projectName: string, filename: string, content: string, isBinary: boolean = false) {
+  const rootOutputDir = path.join(process.cwd(), "output", projectName);
+  const publicOutputDir = path.join(process.cwd(), "public", "output", projectName);
 
   if (!fs.existsSync(rootOutputDir)) fs.mkdirSync(rootOutputDir, { recursive: true });
   if (!fs.existsSync(publicOutputDir)) fs.mkdirSync(publicOutputDir, { recursive: true });
@@ -26,9 +26,9 @@ function saveOutputFile(filename: string, content: string, isBinary: boolean = f
 }
 
 // 오디오 폴더 특화 저장 헬퍼 함수
-function saveAudioFile(filename: string, contentBase64: string) {
-  const rootAudioDir = path.join(process.cwd(), "output", "audio");
-  const publicAudioDir = path.join(process.cwd(), "public", "output", "audio");
+function saveAudioFile(projectName: string, filename: string, contentBase64: string) {
+  const rootAudioDir = path.join(process.cwd(), "output", projectName, "audio");
+  const publicAudioDir = path.join(process.cwd(), "public", "output", projectName, "audio");
 
   if (!fs.existsSync(rootAudioDir)) fs.mkdirSync(rootAudioDir, { recursive: true });
   if (!fs.existsSync(publicAudioDir)) fs.mkdirSync(publicAudioDir, { recursive: true });
@@ -44,7 +44,10 @@ function saveAudioFile(filename: string, contentBase64: string) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { action, script, ttsConfig } = body;
+    const { action, script, ttsConfig, projectName } = body;
+
+    // 프로젝트명이 없으면 기본값 사용
+    const safeProjectName = projectName || "기본 프로젝트";
 
     // 더미 LLM(파싱 및 세그먼트 가공만 하므로 실제 LLM 쿼리는 안 함)
     const dummyLlmAdapter = {
@@ -68,15 +71,23 @@ export async function POST(request: Request) {
     const ssmlList = generator.convertToSsmlJson(segments, ttsAdapter);
 
     // 2. CSV 및 SSML JSON 저장
-    saveOutputFile("tts_segments.csv", csvContent);
-    saveOutputFile("ssml_segments.json", JSON.stringify(ssmlList, null, 2));
+    saveOutputFile(safeProjectName, "tts_segments.csv", csvContent);
+    saveOutputFile(safeProjectName, "ssml_segments.json", JSON.stringify(ssmlList, null, 2));
 
     // 액션이 단순 'parse'인 경우 파싱 결과만 즉각 리턴
     if (action === "parse") {
+      const unregisteredSpeakers = Array.from(
+        new Set(
+          segments
+            .filter(seg => seg.isUnknownSpeaker)
+            .map(seg => seg.speakerId)
+        )
+      );
       return NextResponse.json({
         segments,
         ssmlList,
         csvContent,
+        unregisteredSpeakers,
       });
     }
 
@@ -103,7 +114,7 @@ export async function POST(request: Request) {
                 true // SSML 모드로 고품격 음성합색
               );
               
-              saveAudioFile(fileName, base64Audio);
+              saveAudioFile(safeProjectName, fileName, base64Audio);
 
               manifest.push({
                 id: seg.id,
@@ -136,7 +147,7 @@ export async function POST(request: Request) {
       // 오디오 매니페스트 저장 (audio_manifest.json)
       // ID 오름차순 정렬하여 출력
       manifest.sort((a, b) => a.id - b.id);
-      saveOutputFile("audio_manifest.json", JSON.stringify(manifest, null, 2));
+      saveOutputFile(safeProjectName, "audio_manifest.json", JSON.stringify(manifest, null, 2));
 
       return NextResponse.json({
         success: true,
