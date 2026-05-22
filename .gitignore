@@ -44,7 +44,6 @@ next-env.d.ts
 /node_modules_old/
 /output/
 /public/output/
-/Memory/
 yadam.zip
 _polish_request.json
 project_operating_prompt_bootstrap_reanchor_memory.md
